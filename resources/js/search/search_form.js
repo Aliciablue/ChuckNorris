@@ -1,8 +1,7 @@
-$(document).ready(function() {
+$(document).ready(function () {
     // DOM Element Caching
     const queryContainer = $('#query-container');
     const queryLabel = $('#query-label');
-    const queryHelper = $('#query-helper');
     const searchForm = $('#searchForm');
     const oldType = searchForm.attr('data-old-type');
     const oldQuery = searchForm.attr('data-old-query'); // Get old query
@@ -19,7 +18,6 @@ $(document).ready(function() {
      */
     function updateQueryContainer(event) {
         const selectedType = $('input[name="type"]:checked').val();
-        console.log('updateQueryContainer called, selectedType:', selectedType);
 
         if (selectedType === 'random') {
             handleRandomSelection();
@@ -34,7 +32,6 @@ $(document).ready(function() {
      * Handles the UI updates when the 'random' search type is selected.
      */
     function handleRandomSelection() {
-        console.log('handleRandomSelection called');
         queryContainer.hide();
     }
 
@@ -42,27 +39,19 @@ $(document).ready(function() {
      * Handles the UI updates when the 'keyword' search type is selected.
      */
     function handleKeywordSelection() {
-        console.log('handleKeywordSelection called');
         queryContainer.show();
         const selectedLabelElement = $('input[name="type"]:checked').next('label');
-        console.log('selectedLabelElement data:', selectedLabelElement.data());
-    
+
         const keywordLabelText = selectedLabelElement.data('keyword-label');
-        const keywordHelperText = selectedLabelElement.data('keyword-helper');
-    
+
         // Check if the query input is a select element
         if (queryContainer.find('select').length > 0) {
-            console.log('Found select element, replacing with text input structure');
-            queryContainer.html(`<label for="query" class="form-label" id="query-label">${keywordLabelText}</label><input type="text" class="form-control" id="query" name="query"><small class="form-text text-muted" id="query-helper">${keywordHelperText}</small>`);
+            queryContainer.html(`<label for="query" class="form-label" id="query-label">${keywordLabelText}</label><input type="text" class="form-control" id="query" name="query">`);
         } else if (queryContainer.find('input[type="text"]').length === 0) {
-            console.log('Text input not found, prepending with label and helper');
-            queryContainer.prepend(`<label for="query" class="form-label" id="query-label">${keywordLabelText}</label><input type="text" class="form-control" id="query" name="query"><small class="form-text text-muted" id="query-helper">${keywordHelperText}</small>`);
+            queryContainer.prepend(`<label for="query" class="form-label" id="query-label">${keywordLabelText}</label><input type="text" class="form-control" id="query" name="query">`);
         } else {
-            console.log('Text input already present, just updating label and helper');
             queryLabel.text(keywordLabelText);
-            queryHelper.text(keywordHelperText);
         }
-        console.log('After handling keyword selection, label text:', queryLabel.text(), 'helper text:', queryHelper.text());
     }
 
     /**
@@ -71,16 +60,14 @@ $(document).ready(function() {
      * @param {string} helperText
      */
     function updateQueryLabelAndHelper(labelText, helperText) {
-        console.log('updateQueryLabelAndHelper called with:', labelText, helperText);
         queryLabel.text(labelText);
-        queryHelper.text(helperText);
+
     }
 
     /**
      * Handles the UI updates when the 'category' search type is selected.
      */
     function handleCategorySelection() {
-        console.log('handleCategorySelection called');
         queryContainer.show();
         const selectedLabelElement = $('input[name="type"]:checked').next('label');
         updateQueryLabelAndHelper(
@@ -89,8 +76,7 @@ $(document).ready(function() {
         );
 
         if (queryContainer.find('select').length === 0) {
-            if ( window.cachedCategories) {
-                console.log('Categories loaded from cache (client-side).');
+            if (window.cachedCategories) {
                 populateCategoryDropdown(cachedCategories);
             } else if (!loadingCategories) {
                 loadCategories();
@@ -105,7 +91,7 @@ $(document).ready(function() {
      */
     function populateCategoryDropdown(categories) {
         let options = '<select class="form-select" id="query" name="query">';
-        $.each(categories, function(index, category) {
+        $.each(categories, function (index, category) {
             const isSelected = oldQuery === category ? 'selected' : ''; // Compare with JavaScript variable
             options += `<option value="${category}" ${isSelected}>${category}</option>`;
         });
@@ -122,15 +108,15 @@ $(document).ready(function() {
         const currentLocale = document.documentElement.lang;
         const categoryUrl = `/${currentLocale}/categories`;
         $.ajax({
-            url: categoryUrl ,
+            url: categoryUrl,
             method: 'GET',
-            success: function(data) {
+            success: function (data) {
                 console.log('Categories loaded from server.');
                 cachedCategories = data; // Store categories in the variable
                 populateCategoryDropdown(data);
                 loadingCategories = false;
             },
-            error: function() {
+            error: function () {
                 loadingCategories = false;
                 console.error('Error loading categories.');
             }
@@ -141,11 +127,10 @@ $(document).ready(function() {
      * Initializes the form based on the 'oldType' and 'oldQuery' attributes.
      */
     function initializeForm() {
-        console.log('initializeForm called, oldType:', oldType, 'cachedCategories:',  window.cachedCategories);
         if (oldType) {
             $(`input[name="type"][value="${oldType}"]`).prop('checked', true);
-            if (oldType === 'category' &&  window.cachedCategories) {
-                populateCategoryDropdown( window.cachedCategories);
+            if (oldType === 'category' && window.cachedCategories) {
+                populateCategoryDropdown(window.cachedCategories);
             } else if (oldType === 'keyword') {
                 updateQueryContainer(); // Ensure keyword UI is set
             } else {
@@ -165,21 +150,21 @@ $(document).ready(function() {
     const currentLocale = document.documentElement.lang;
     const categoryUrl = `/${currentLocale}/categories`;
     $.ajax({
-        url: categoryUrl ,
+        url: categoryUrl,
         method: 'GET',
-        success: function(data) {
+        success: function (data) {
             console.log('Categories loaded on initial page load.');
             window.cachedCategories = data; // Store categories
             initializeForm(); // Initialize form after categories are loaded
         },
-        error: function() {
+        error: function () {
             console.error('Error loading categories on initial page load.');
             initializeForm(); // Still initialize even if categories fail to load
         }
     });
 
     // Initialize form if categories were already cached
-    if ( window.cachedCategories) {
+    if (window.cachedCategories) {
         initializeForm();
     } else if (initialLoad && !oldType) {
         initializeForm(); // Initialize on initial load if no oldType and categories not immediately loaded

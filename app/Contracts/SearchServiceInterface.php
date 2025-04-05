@@ -6,6 +6,8 @@ interface SearchServiceInterface
 {
     public function searchFacts(array $data);
     public function getCategories();
-    public function getAllResults($validatedData, $type, $query, $email);
+    public function getAllResults($validatedData);
+    public function getRandomChuckNorrisJoke();
+    public function handleSearchRecord(string $type, string $query, array $allResults, string $email);
     
 }

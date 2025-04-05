@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\NotificationServiceInterface;
-use App\Models\Search;
 use App\Jobs\SaveSearchJob;
 use App\Http\Requests\SearchRequest;
-use App\Jobs\SendSearchResultsEmail;
 use App\Http\Traits\ApiResponseTrait;
-use Illuminate\Support\Facades\Cache;
 use App\Exceptions\ApiServiceException;
-use Illuminate\Support\Facades\Session;
 use App\Contracts\SearchServiceInterface;
 use App\Contracts\SearchRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
 use App\Exceptions\EloquentSearchSaveException;
 use Exception;
+use Illuminate\Container\Attributes\Log;
 use Illuminate\Pagination\LengthAwarePaginator;
+
 
 
 class SearchController extends Controller
@@ -28,7 +26,9 @@ class SearchController extends Controller
     public function index()
     {
         session()->forget('current_search_id');
-        return view('search.index');
+        $randomJoke = $this->searchService->getRandomChuckNorrisJoke(); // Assuming you add this method to your SearchService
+
+        return view('search.index', ['randomJoke' => $randomJoke['value'] ?? null]);
     }
 
     public function search(SearchRequest $request)
@@ -41,28 +41,19 @@ class SearchController extends Controller
             $perPage = 10;
             $email = $validatedData['email'] ?? null;
 
-            $allResults = $this->searchService->getAllResults($validatedData, $type, $query, $email);
+            $allResults = $this->searchService->getAllResults($validatedData);
 
-            $this->handleDatabaseSaving($type, $query, $allResults, $email);
+            $this->searchService->handleSearchRecord($type, $query, $allResults, $email); // Call service to handle saving
 
             $paginatedResults = $this->paginateResults($request, $allResults, $page, $perPage);
 
-            $this->handleNotificationSending($request, $allResults, $type, $query, $email);
+            $this->notificationService->handleSearchResultNotification($request, collect($allResults)->take(config('mail.send_amount_results'))->toArray(), $type, $query, $email, count($allResults)); // Call service for notification
 
             return $this->prepareResponse($request, $paginatedResults, $query, $type);
         } catch (ApiServiceException $e) {
             return $this->errorResponseFront('Error al conectar con la API', $e->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         } catch (EloquentSearchSaveException $e) {
             return $this->errorResponseFront('Error al guardar los resultados de la búsqueda', $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        } 
-    }
-
-    protected function handleDatabaseSaving(string $type, ?string $query, array $allResults, ?string $email): void
-    {
-        // The first time we arrive to the page we set the session and save to database         
-        if (!session()->get('current_search_id')) {
-            SaveSearchJob::dispatch($this->searchRepository,$type, $query, $allResults, $email);
-            session()->put('current_search_id', uniqid());
         }
     }
     protected function paginateResults(SearchRequest $request, array $allResults, int $page, int $perPage): LengthAwarePaginator
@@ -76,14 +67,6 @@ class SearchController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()]
         );
-    }
-    protected function handleNotificationSending(SearchRequest $request, array $allResults, string $type, ?string $query, ?string $email): void
-    {
-        if ($request->has('email') && filter_var($request->input('email'), FILTER_VALIDATE_EMAIL)) {
-            $allResultsUrl = route('search.results', ['type' => $type, 'query' => $query, 'locale' => app()->getLocale()]);
-            $this->notificationService->sendSearchResultsNotification(collect($allResults), $type, $query, $email, $allResultsUrl, app()->getLocale());
-            session()->flash('success', __('messages.email_sent_confirmation'));
-        }
     }
     protected function prepareResponse(SearchRequest $request, LengthAwarePaginator $paginatedResults, ?string $query, string $type)
     {

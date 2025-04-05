@@ -5,6 +5,7 @@
 
 @section('content')
     <h1>{{ __('index.titleIndex') }}</h1>
+    <x-random-joke :randomJoke="$randomJoke"/>
 
     @if ($errors->any())
         <x-alert type="danger">

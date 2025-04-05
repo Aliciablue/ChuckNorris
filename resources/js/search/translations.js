@@ -13,7 +13,7 @@ const translations = {
         'Please select a valid search type.': 'Por favor, selecciona un tipo de búsqueda válido.',
         'Please enter a valid email address.': 'Por favor, introduce una dirección de correo válida.',
         'Please enter a keyword.': 'Por favor, introduce una palabra clave.',
-        'Keyword must be at least 3 caracteres long.': 'La palabra clave debe tener al menos 3 caracteres.',
+        'Keyword must be at least 3 characters long.': 'La palabra clave debe tener al menos 3 caracteres.',
         'Keyword cannot be longer than 255 caracteres.': 'La palabra clave no puede tener más de 255 caracteres.',
         'Keyword cannot contain special characters.': 'La palabra clave no puede contener caracteres especiales.',
         'Categories could not be loaded.': 'No se pudieron cargar las categorías.',

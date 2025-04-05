@@ -15,6 +15,7 @@ return [
     */
 
     'default' => env('MAIL_MAILER', 'log'),
+    'send_amount_results' => env('SEND_AMOUNT_RESULTS', 10),
 
     /*
     |--------------------------------------------------------------------------

@@ -30,9 +30,9 @@ class SearchFactory extends Factory
         $type = $this->faker->randomElement($types);
         $query = null;
 
-        if ($type === 'keyword') {
+        //if ($type === 'keyword') {
             $query = $this->faker->word();
-        } elseif ($type === 'category') {
+        /* } elseif ($type === 'category') {
             // Resolve an instance of SearchService from the container
             $searchService = App::make(SearchService::class);
             $categories = $searchService->getCategories();
@@ -42,7 +42,7 @@ class SearchFactory extends Factory
             } else {
                 $query = $this->faker->word(); // Fallback si no hay categorías en caché
             }
-        }
+        } */
 
         return [
             'type' => $type,

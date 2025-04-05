@@ -19,8 +19,9 @@ body {
     background-color: #f4f4f4;
     display: flex; /* For centering */
     justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
+    align-items: flex-start; 
     min-height: 100vh; /* Ensure full viewport height */
+    padding-top: 20px; /* Add some spacing from the top */
 }
 .container {
     background-color: #fff;
@@ -28,10 +29,36 @@ body {
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     width: 80%; /* Adjust width as needed */
-    max-width: 1400px; /* Set a maximum width if desired */
+    max-width: 1400px; /* Limit max width */
+    margin-top: 0px; /* Adjust as needed */
 }
 h1 {
     color: #007bff;
     margin-bottom: 20px;
     text-align: center; /* Center the title */
+}
+.clipboard-notification {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    z-index: 1000; /* Ensure it's on top of other elements */
+    font-size: 0.9em;
+}
+
+.fact-item {
+    background-color: #f9f9f9;
+    display: flex;
+    align-items: center;
+}
+
+.fact-text {
+    flex-grow: 1;
+}
+
+.copy-button {
+    margin-left: 10px;
 }

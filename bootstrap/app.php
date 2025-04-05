@@ -16,7 +16,6 @@ return Application::configure(basePath: dirname(__DIR__))
         //
         $middleware->web(append: [
             \Illuminate\Session\Middleware\StartSession::class,
-           //SetLocale::class,//Set after the StartSession middleware!
           LocaleMiddleware::class,
         ]);
         $middleware->alias([
