@@ -14,21 +14,21 @@ use Illuminate\Contracts\Queue\ShouldBeUnique;
 class SaveSearchJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
+//protected SearchRepositoryInterface $searchRepository,
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(protected SearchRepositoryInterface $searchRepository, protected string $type, protected ?string $query, protected array $results, protected ?string $email) {}
+    public function __construct( protected string $type, protected ?string $query, protected array $results, protected ?string $email) {}
 
     /**
      * Execute the job.
      *
      * @return void
      */
-    public function handle()
+    public function handle(SearchRepositoryInterface $searchRepository)
     {
-        $this->searchRepository->save($this->type, $this->query, $this->results, $this->email);
+        $searchRepository->save($this->type, $this->query, $this->results, $this->email);
     }
 }

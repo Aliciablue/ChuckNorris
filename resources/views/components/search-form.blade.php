@@ -43,8 +43,3 @@
 
     <button type="submit" class="btn btn-primary">{{ __('index.search_button') }}</button>
 </form>
-
-<script>
-    // Frontend Validation ... (your existing script - ensure it's still correctly targeting elements)
-</script>
-@vite(['resources/css/app.css', 'resources/js/app.js'])

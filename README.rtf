@@ -9,33 +9,37 @@
 \
 La aplicaci\'f3n se ha desarrollado siguiendo un patr\'f3n de arquitectura que promueve la separaci\'f3n de responsabilidades y la mantenibilidad. A continuaci\'f3n, se detallan los aspectos m\'e1s relevantes de la soluci\'f3n:\
 \
-* **Capa de Servicio:** Se ha implementado una capa de servicio `SearchService` que encapsula la l\'f3gica de negocio principal. Este servicio es responsable de interactuar con la API de Chuck Norris para obtener los datos y realizar el procesamiento necesario antes de devolverlos al controlador.\
-\
-* **Capa de Repositorio:** Para la interacci\'f3n con la base de datos, se utiliza un patr\'f3n de repositorio  `EloquentSearchRepository` implementando una interfaz `SearchRepositoryInterface`. Esto proporciona una abstracci\'f3n sobre la forma en que se acceden y manipulan los datos, facilitando la posibilidad de cambiar la implementaci\'f3n de la base de datos en el futuro. La inyecci\'f3n de dependencias se utiliza para desacoplar el controlador y los servicios de las implementaciones concretas de los repositorios.\
+* **Capa de Servicio:** La capa de servicio se compone de varios servicios especializados:\
+    * `ChuckNorrisApiService`: Responsable de la comunicaci\'f3n directa con la API de Chuck Norris, incluyendo la gesti\'f3n de reintentos y l\'edmites de tasa.\
+    * `SearchCacheService`: Encargado de la l\'f3gica de almacenamiento y recuperaci\'f3n de datos en cach\'e9 utilizando Redis.\
+    * `SearchRecordService`: Dedicado a la gesti\'f3n del guardado de la informaci\'f3n de b\'fasqueda en la base de datos, utilizando un sistema de colas.\
+    * `ChuckNorrisSearchService` (Orquestador): Act\'faa como punto de entrada principal para la l\'f3gica de b\'fasqueda, coordinando las interacciones entre los dem\'e1s servicios.\
+\pard\pardeftab720\partightenfactor0
+\cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2     * `LocaleService`: Gestiona la configuraci\'f3n del idioma de la aplicaci\'f3n, permitiendo establecer la localizaci\'f3n.\kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+* **Capa de Repositorio:** Para la interacci\'f3n con la base de datos, se utiliza un patr\'f3n de repositorio `EloquentSearchRepository` implementando una interfaz `SearchRepositoryInterface`. Esto proporciona una abstracci\'f3n sobre la forma en que se acceden y manipulan los datos, facilitando la posibilidad de cambiar la implementaci\'f3n de la base de datos en el futuro. La inyecci\'f3n de dependencias se utiliza para desacoplar el controlador y los servicios de las implementaciones concretas de los repositorios.\
 \
 * **Cach\'e9:** Para mejorar el rendimiento y reducir la carga en la API externa, se ha implementado un sistema de cach\'e9 con Redis. Los resultados de las b\'fasquedas (especialmente las b\'fasquedas por categor\'eda y quiz\'e1s hechos aleatorios) se almacenan en cach\'e9 durante un tiempo determinado. Esto permite que las solicitudes posteriores con los mismos par\'e1metros se sirvan directamente desde la cach\'e9, sin necesidad de volver a consultar la API.\
 \
-\pard\pardeftab720\partightenfactor0
-\cf0 \expnd0\expndtw0\kerning0
-* **Sistema de Reintento para la API:** Aunque la API de Chuck Norris no muestra expl\'edcitamente l\'edmites de tasa en sus encabezados, se ha implementado un sistema de reintento para las llamadas a la API. Esto ayuda a garantizar la robustez de la aplicaci\'f3n al manejar posibles problemas de conexi\'f3n temporales o la imposici\'f3n de l\'edmites de tasa no anunciados. En caso de un fallo en la solicitud inicial, la aplicaci\'f3n intentar\'e1 realizar la misma solicitud un n\'famero limitado de veces despu\'e9s de un breve per\'edodo de espera incrementado.\kerning1\expnd0\expndtw0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \
-* **Guardado en Base de Datos con Jobs y Queues:** Cada vez que se realiza una b\'fasqueda, los detalles de la b\'fasqueda y los resultados obtenidos se guardan en la base de datos de forma as\'edncrona utilizando Jobs ( `SaveSearchJob`) y el sistema de colas de Redis. Esto asegura que la respuesta al usuario sea r\'e1pida, ya que la tarea de guardar en la base de datos se delega a un proceso en segundo plano. \
+* **Sistema de Reintento para la API:** Aunque la API de Chuck Norris no muestra expl\'edcitamente l\'edmites de tasa en sus encabezados, se ha implementado un sistema de reintento para las llamadas a la API. Esto ayuda a garantizar la robustez de la aplicaci\'f3n al manejar posibles problemas de conexi\'f3n temporales o la imposici\'f3n de l\'edmites de tasa no anunciados. En caso de un fallo en la solicitud inicial, la aplicaci\'f3n intentar\'e1 realizar la misma solicitud un n\'famero limitado de veces despu\'e9s de un breve per\'edodo de espera incrementado.\
 \
-* **Env\'edo de Correo Electr\'f3nico con Jobs y Queues:** Cuando el usuario proporciona una direcci\'f3n de correo electr\'f3nico, los resultados de la b\'fasqueda se env\'edan por correo electr\'f3nico tambi\'e9n de forma as\'edncrona utilizando Jobs (por ejemplo, `SendSearchResultsEmail`) y el sistema de colas de Redis. Esto garantiza que el env\'edo de correos electr\'f3nicos no bloquee la experiencia del usuario y permite manejar un gran volumen de solicitudes de env\'edo de correo electr\'f3nico de manera eficiente. Se ha implementado un servicio de notificaci\'f3n (`EmailService` con su interfaz `NotificationServiceInterface`) para abstraer la l\'f3gica de env\'edo de correos electr\'f3nicos.\
+* **Guardado en Base de Datos con Jobs y Queues:** Cada vez que se realiza una b\'fasqueda, los detalles de la b\'fasqueda y los resultados obtenidos se guardan en la base de datos de forma as\'edncrona utilizando Jobs ( `SaveSearchJob`) y el sistema de colas de Redis. Para la gesti\'f3n de la cola de trabajos, se utiliza una interfaz `JobDispatcherInterface` con una implementaci\'f3n concreta para el sistema de colas de Laravel. Esto asegura que la respuesta al usuario sea r\'e1pida, ya que la tarea de guardar en la base de datos se delega a un proceso en segundo plano.\
+\
+* **Env\'edo de Correo Electr\'f3nico con Jobs y Queues:** Cuando el usuario proporciona una direcci\'f3n de correo electr\'f3nico, los resultados de la b\'fasqueda se env\'edan por correo electr\'f3nico tambi\'e9n de forma as\'edncrona utilizando Jobs (por ejemplo, `SendSearchResultsEmail`) y el sistema de colas de Redis. Esto garantiza que el env\'edo de correos electr\'f3nicos no bloquee la experiencia del usuario y permite manejar un gran volumen de solicitudes de env\'edo de correo electr\'f3nico de manera eficiente. Se ha implementado un servicio de notificaci\'f3n (`EmailService` con su interfaz `NotificationServiceInterface`) para abstraer la l\'f3gica de env\'edo de correos electr\'f3nicos. **El enlace incluido en el correo electr\'f3nico se genera idealmente a partir de la informaci\'f3n almacenada en la cach\'e9 o la base de datos. Actualmente, se obtiene de la cach\'e9 o directamente de la API.**\
 \
 * **Controladores:** El controlador `SearchController` es responsable de recibir las peticiones del usuario, invocar los servicios correspondientes para realizar la l\'f3gica de negocio y devolver las respuestas al usuario.\
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 * **\expnd0\expndtw0\kerning0
-Middleware para la Gesti\'f3n del Idioma:** Se ha implementado un middleware personalizado llamado `LocaleMiddleware` para gestionar el idioma de la aplicaci\'f3n. Establece el idioma para la aplicaci\'f3n y se guarda en la sesi\'f3n del usuario. \
+* **Middleware para la Gesti\'f3n del Idioma:** Se ha implementado un middleware personalizado llamado `LocaleMiddleware` para gestionar el idioma de la aplicaci\'f3n. Establece el idioma para la aplicaci\'f3n y se guarda en la sesi\'f3n del usuario.\
 \
-\pard\pardeftab720\partightenfactor0
-\cf0 \outl0\strokewidth0 \strokec2 * **Chiste Aleatorio en la P\'e1gina de Inicio:** En la p\'e1gina de inicio (index), se muestra un chiste aleatorio. Este chiste se obtiene de una lista de resultados almacenada en cach\'e9. La lista se genera llamando al servicio de b\'fasqueda con `type = keyword` y `query = 'Chuck'`, lo que devuelve una extensa lista de aproximadamente 10.000 elementos. Los resultados de esta llamada a la API se almacenan en cach\'e9 durante 1 hora. Cada vez que se recarga la p\'e1gina de inicio, se selecciona y muestra un chiste diferente de esta lista en cach\'e9.\outl0\strokewidth0 \
-\pard\pardeftab720\partightenfactor0
-\cf0 \kerning1\expnd0\expndtw0 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 En resumen, la soluci\'f3n se basa en principios de dise\'f1o robustos, utilizando patrones como Servicios y Repositorios, inyecci\'f3n de dependencias para la flexibilidad, cach\'e9 para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el env\'edo de correos electr\'f3nicos.\
+* **Registro (Logging) con Interfaz:** Para el registro de eventos y errores, la aplicaci\'f3n utiliza la inyecci\'f3n de la interfaz `Psr\\Log\\LoggerInterface` en lugar de un facade est\'e1tico. Esto facilita la prueba y el desacoplamiento de la implementaci\'f3n de logging.\
+\
+* **Seguimiento de B\'fasquedas Iniciadas:** Para evitar el despacho duplicado del job de guardado de b\'fasqueda dentro de la misma petici\'f3n, se utiliza un mecanismo de seguimiento a nivel de la petici\'f3n, como los atributos del objeto Request.\
+\
+* **Chiste Aleatorio en la P\'e1gina de Inicio:** En la p\'e1gina de inicio (index), se muestra un chiste aleatorio. Este chiste se obtiene de una lista de resultados almacenada en cach\'e9. La lista se genera llamando al servicio de b\'fasqueda con `type = keyword` y `query = 'Chuck'`, lo que devuelve una extensa lista de aproximadamente 10.000 elementos. Los resultados de esta llamada a la API se almacenan en cach\'e9 durante 1 hora. Cada vez que se recarga la p\'e1gina de inicio, se selecciona y muestra un chiste diferente de esta lista en cach\'e9.\
+\
+En resumen, la soluci\'f3n se basa en principios de dise\'f1o robustos, utilizando patrones como Servicios y Repositorios, inyecci\'f3n de dependencias para la flexibilidad, cach\'e9 para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el env\'edo de correos electr\'f3nicos.\
 \
 \
 \pard\pardeftab720\partightenfactor0

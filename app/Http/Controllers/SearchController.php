@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\NotificationServiceInterface;
-use App\Jobs\SaveSearchJob;
+use Exception;
 use App\Http\Requests\SearchRequest;
 use App\Http\Traits\ApiResponseTrait;
+use App\Services\SearchRecordService;
 use App\Exceptions\ApiServiceException;
 use App\Contracts\SearchServiceInterface;
 use App\Contracts\SearchRepositoryInterface;
 use Symfony\Component\HttpFoundation\Response;
+use App\Contracts\NotificationServiceInterface;
 use App\Exceptions\EloquentSearchSaveException;
-use Exception;
-use Illuminate\Container\Attributes\Log;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 
@@ -21,12 +20,12 @@ class SearchController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(protected SearchServiceInterface $searchService, protected SearchRepositoryInterface $searchRepository, protected NotificationServiceInterface $notificationService) {}
+    public function __construct(protected SearchServiceInterface $searchService, protected SearchRepositoryInterface $searchRepository, protected NotificationServiceInterface $notificationService, protected SearchRecordService $recordService) {}
 
     public function index()
     {
         session()->forget('current_search_id');
-        $randomJoke = $this->searchService->getRandomChuckNorrisJoke(); // Assuming you add this method to your SearchService
+        $randomJoke = $this->searchService->getRandomChuckNorrisJoke();
 
         return view('search.index', ['randomJoke' => $randomJoke['value'] ?? null]);
     }
@@ -42,8 +41,14 @@ class SearchController extends Controller
             $email = $validatedData['email'] ?? null;
 
             $allResults = $this->searchService->getAllResults($validatedData);
+         
 
-            $this->searchService->handleSearchRecord($type, $query, $allResults, $email); // Call service to handle saving
+            // Extract the raw items from the LengthAwarePaginator if it's an object
+            $resultsToRecord = is_object($allResults) && method_exists($allResults, 'items')
+                ? $allResults->items()
+                : $allResults;
+               // dd($allResults);
+            $this->recordService->handleSearchRecord($type, $query, $resultsToRecord, $email); // Call service to handle saving
 
             $paginatedResults = $this->paginateResults($request, $allResults, $page, $perPage);
 

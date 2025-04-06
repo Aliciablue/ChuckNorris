@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\SetLocale;
+
 use Illuminate\Foundation\Application;
 use App\Http\Middleware\LocaleMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;

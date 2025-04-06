@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Services\SearchService;
+use App\Services\QueueDispatcher;
 use Illuminate\Support\ServiceProvider;
+use App\Contracts\JobDispatcherInterface;
 use App\Contracts\SearchServiceInterface;
+use App\Services\ChuckNorrisSearchService;
 use App\Contracts\SearchRepositoryInterface;
 use App\Services\Notifications\EmailService;
 use App\Repositories\EloquentSearchRepository;
@@ -22,8 +25,9 @@ class AppServiceProvider extends ServiceProvider
             $this->app->register(TelescopeServiceProvider::class);
         }
         $this->app->bind(SearchRepositoryInterface::class, EloquentSearchRepository::class);
-        $this->app->bind(SearchServiceInterface::class, SearchService::class);
+        $this->app->bind(SearchServiceInterface::class, ChuckNorrisSearchService::class);
         $this->app->bind(NotificationServiceInterface::class, EmailService::class);
+        $this->app->bind(JobDispatcherInterface::class, QueueDispatcher::class);
 
     }
 
