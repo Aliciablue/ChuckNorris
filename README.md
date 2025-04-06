@@ -63,3 +63,4 @@ Implementar un conjunto de pruebas unitarias y de integración para cubrir algun
 * **Cambiar el Número de Resultados Mostrados en la UI:** Permitir al usuario configurar o cambiar el número de resultados que se muestran por página en la interfaz de usuario.
 * **Utilizar un Enumerado (Enum) para el Tipo de Búsqueda:** Reemplazar las cadenas de texto codificadas (`keyword`, `category`, `random`) utilizadas para el tipo de búsqueda con un enumerado para mejorar la legibilidad y evitar errores tipográficos.
 * **Aumentar el Tiempo de Caché:** El tiempo de caché actual está configurado en 1 hora, pero podría aumentarse significativamente ya que el contenido de la API no parece cambiar con mucha frecuencia. Considerar un tiempo de caché más prolongado para mejorar aún más el rendimiento.
+* **Testing Completo:** Implementar una cobertura exhaustiva de pruebas unitarias, de integración y funcionales para asegurar la robustez de todas las funcionalidades de la aplicación.
