@@ -29,6 +29,8 @@ La aplicación se ha desarrollado siguiendo un patrón de arquitectura que promu
 
 * **Chiste Aleatorio en la Página de Inicio:** En la página de inicio (index), se muestra un chiste aleatorio. Este chiste se obtiene de una lista de resultados almacenada en caché. La lista se genera llamando al servicio de búsqueda con `type = keyword` y `query = 'Chuck'`, lo que devuelve una extensa lista de aproximadamente 10.000 elementos. Los resultados de esta llamada a la API se almacenan en caché durante 1 hora. Cada vez que se recarga la página de inicio, se selecciona y muestra un chiste diferente de esta lista en caché.
 
+* **Consideraciones de SEO:** Con el objetivo de optimizar el SEO (Search Engine Optimization), se ha optado por incluir el idioma directamente en la URL de la aplicación. Esto permite a los motores de búsqueda identificar y categorizar el contenido por idioma de manera más efectiva.
+
 En resumen, la solución se basa en principios de diseño robustos, utilizando patrones como Servicios y Repositorios, inyección de dependencias para la flexibilidad, caché para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el envío de correos electrónicos.
 
 **Nota Adicional:**
