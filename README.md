@@ -1,66 +1,66 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Explicación de la Solución
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+La aplicación se ha desarrollado siguiendo un patrón de arquitectura que promueve la separación de responsabilidades y la mantenibilidad. A continuación, se detallan los aspectos más relevantes de la solución:
 
-## About Laravel
+* **Capa de Servicio:** La capa de servicio se compone de varios servicios especializados:
+    * `ChuckNorrisApiService`: Responsable de la comunicación directa con la API de Chuck Norris, incluyendo la gestión de reintentos y límites de tasa.
+    * `SearchCacheService`: Encargado de la lógica de almacenamiento y recuperación de datos en caché utilizando Redis.
+    * `SearchRecordService`: Dedicado a la gestión del guardado de la información de búsqueda en la base de datos, utilizando un sistema de colas.
+    * `ChuckNorrisSearchService` (Orquestador): Actúa como punto de entrada principal para la lógica de búsqueda, coordinando las interacciones entre los demás servicios.
+    * `LocaleService`: Gestiona la configuración del idioma de la aplicación, permitiendo establecer la localización.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+* **Capa de Repositorio:** Para la interacción con la base de datos, se utiliza un patrón de repositorio `EloquentSearchRepository` implementando una interfaz `SearchRepositoryInterface`. Esto proporciona una abstracción sobre la forma en que se acceden y manipulan los datos, facilitando la posibilidad de cambiar la implementación de la base de datos en el futuro. La inyección de dependencias se utiliza para desacoplar el controlador y los servicios de las implementaciones concretas de los repositorios.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* **Caché:** Para mejorar el rendimiento y reducir la carga en la API externa, se ha implementado un sistema de caché con Redis. Los resultados de las búsquedas (especialmente las búsquedas por categoría y quizás hechos aleatorios) se almacenan en caché durante un tiempo determinado. Esto permite que las solicitudes posteriores con los mismos parámetros se sirvan directamente desde la caché, sin necesidad de volver a consultar la API.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+* **Sistema de Reintento para la API:** Aunque la API de Chuck Norris no muestra explícitamente límites de tasa en sus encabezados, se ha implementado un sistema de reintento para las llamadas a la API. Esto ayuda a garantizar la robustez de la aplicación al manejar posibles problemas de conexión temporales o la imposición de límites de tasa no anunciados. En caso de un fallo en la solicitud inicial, la aplicación intentará realizar la misma solicitud un número limitado de veces después de un breve período de espera incrementado.
 
-## Learning Laravel
+* **Guardado en Base de Datos con Jobs y Queues:** Cada vez que se realiza una búsqueda, los detalles de la búsqueda y los resultados obtenidos se guardan en la base de datos de forma asíncrona utilizando Jobs ( `SaveSearchJob`) y el sistema de colas de Redis. Para la gestión de la cola de trabajos, se utiliza una interfaz `JobDispatcherInterface` con una implementación concreta para el sistema de colas de Laravel. Esto asegura que la respuesta al usuario sea rápida, ya que la tarea de guardar en la base de datos se delega a un proceso en segundo plano.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+* **Envío de Correo Electrónico con Jobs y Queues:** Cuando el usuario proporciona una dirección de correo electrónico, los resultados de la búsqueda se envían por correo electrónico también de forma asíncrona utilizando Jobs (por ejemplo, `SendSearchResultsEmail`) y el sistema de colas de Redis. Esto garantiza que el envío de correos electrónicos no bloquee la experiencia del usuario y permite manejar un gran volumen de solicitudes de envío de correo electrónico de manera eficiente. Se ha implementado un servicio de notificación (`EmailService` con su interfaz `NotificationServiceInterface`) para abstraer la lógica de envío de correos electrónicos. **El enlace incluido en el correo electrónico se genera idealmente a partir de la información almacenada en la caché o la base de datos. Actualmente, se obtiene de la caché o directamente de la API.**
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+* **Controladores:** El controlador `SearchController` es responsable de recibir las peticiones del usuario, invocar los servicios correspondientes para realizar la lógica de negocio y devolver las respuestas al usuario.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Middleware para la Gestión del Idioma:** Se ha implementado un middleware personalizado llamado `LocaleMiddleware` para gestionar el idioma de la aplicación. Establece el idioma para la aplicación y se guarda en la sesión del usuario.
 
-## Laravel Sponsors
+* **Registro (Logging) con Interfaz:** Para el registro de eventos y errores, la aplicación utiliza la inyección de la interfaz `Psr\Log\LoggerInterface` en lugar de un facade estático. Esto facilita la prueba y el desacoplamiento de la implementación de logging.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+* **Seguimiento de Búsquedas Iniciadas:** Para evitar el despacho duplicado del job de guardado de búsqueda dentro de la misma petición, se utiliza un mecanismo de seguimiento a nivel de la petición, como los atributos del objeto Request.
 
-### Premium Partners
+* **Chiste Aleatorio en la Página de Inicio:** En la página de inicio (index), se muestra un chiste aleatorio. Este chiste se obtiene de una lista de resultados almacenada en caché. La lista se genera llamando al servicio de búsqueda con `type = keyword` y `query = 'Chuck'`, lo que devuelve una extensa lista de aproximadamente 10.000 elementos. Los resultados de esta llamada a la API se almacenan en caché durante 1 hora. Cada vez que se recarga la página de inicio, se selecciona y muestra un chiste diferente de esta lista en caché.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+En resumen, la solución se basa en principios de diseño robustos, utilizando patrones como Servicios y Repositorios, inyección de dependencias para la flexibilidad, caché para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el envío de correos electrónicos.
 
-## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Modelo de Datos
 
-## Code of Conduct
+La aplicación utiliza las siguientes tablas para almacenar información:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+* **searches:** Guarda la consulta de búsqueda (`query`) que puede ser una categoría o una palabra clave, el tipo de búsqueda (`type`) que puede ser 'keyword', 'category' o 'random', los resultados obtenidos de la búsqueda almacenados en formato JSON (`results`), y la dirección de correo electrónico (`email`) proporcionada por el usuario (si la hay).
+* `id` (INT, clave primaria)
+* `type` (VARCHAR) - El tipo de búsqueda (keyword, category, random).
+* `query` (TEXT, nullable) - La consulta de búsqueda (palabra clave o categoría).
+* `results` (TEXT) - Los resultados de la búsqueda en formato JSON.
+* `email` (VARCHAR, nullable) - La dirección de correo electrónico del usuario (opcional).
+* `created_at` (TIMESTAMP)
+* `updated_at` (TIMESTAMP)
 
-## Security Vulnerabilities
+## Testing
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Implementar un conjunto de pruebas unitarias y de integración para cubrir algunas de las funcionalidades de la aplicación, incluyendo pruebas para los controladores, servicios, repositorios, jobs y middleware.
+   
+ * `SearchResultsMailFeatureTest`
+ * `SendSearchResultsEmailTest`
+ * `SearchResultsMailTest`
+ * `EloquentSearchRepositoryTest`
+ * `SearchControllerTest`
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Mejoras Adicionales
+
+* **Mostrar el Número Total de Resultados en el Correo Electrónico:** Incluir en el correo electrónico enviado al usuario el número total de resultados encontrados para su búsqueda.
+* **Cambiar el Número de Resultados Mostrados en la UI:** Permitir al usuario configurar o cambiar el número de resultados que se muestran por página en la interfaz de usuario.
+* **Utilizar un Enumerado (Enum) para el Tipo de Búsqueda:** Reemplazar las cadenas de texto codificadas (`keyword`, `category`, `random`) utilizadas para el tipo de búsqueda con un enumerado para mejorar la legibilidad y evitar errores tipográficos.
+* **Aumentar el Tiempo de Caché:** El tiempo de caché actual está configurado en 1 hora, pero podría aumentarse significativamente ya que el contenido de la API no parece cambiar con mucha frecuencia. Considerar un tiempo de caché más prolongado para mejorar aún más el rendimiento.
+* **Testing Completo:** Implementar una cobertura exhaustiva de pruebas unitarias, de integración y funcionales para asegurar la robustez de todas las funcionalidades de la aplicación.
