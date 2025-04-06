@@ -31,6 +31,10 @@ La aplicación se ha desarrollado siguiendo un patrón de arquitectura que promu
 
 En resumen, la solución se basa en principios de diseño robustos, utilizando patrones como Servicios y Repositorios, inyección de dependencias para la flexibilidad, caché para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el envío de correos electrónicos.
 
+**Nota Adicional:**
+
+Se incluye una carpeta llamada `Screenshots` en la raíz del repositorio, donde se pueden encontrar pantallazos de la aplicación para una mejor comprensión visual de su funcionamiento.
+
 
 ## Modelo de Datos
 
