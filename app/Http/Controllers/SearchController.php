@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Contracts\NotificationServiceInterface;
 use App\Exceptions\EloquentSearchSaveException;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Psr\Log\LoggerInterface;
 
 
 
@@ -20,14 +21,13 @@ class SearchController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(protected SearchServiceInterface $searchService, protected SearchRepositoryInterface $searchRepository, protected NotificationServiceInterface $notificationService, protected SearchRecordService $recordService) {}
+    public function __construct(protected SearchServiceInterface $searchService, protected SearchRepositoryInterface $searchRepository, protected NotificationServiceInterface $notificationService, protected SearchRecordService $recordService,protected LoggerInterface $logger) {}
 
     public function index()
     {
-        session()->forget('current_search_id');
         $randomJoke = $this->searchService->getRandomChuckNorrisJoke();
 
-        return view('search.index', ['randomJoke' => $randomJoke['value'] ?? null]);
+        return view('search.index', ['randomJoke' => $randomJoke?? null]);
     }
 
     public function search(SearchRequest $request)
@@ -86,7 +86,7 @@ class SearchController extends Controller
             $categories = $this->searchService->getCategories();
             return response()->json($categories);
         } catch (ApiServiceException $e) {
-            return $this->errorResponseJson('Error al obtener las categorías', $e->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
+            return $this->errorResponseJson('Error al conectar con la API', $e->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         } catch (\Exception $e) {
             return $this->errorResponseJson('Error al obtener las categorías', $e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }

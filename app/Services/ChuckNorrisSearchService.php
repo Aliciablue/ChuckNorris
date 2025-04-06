@@ -39,6 +39,7 @@ class ChuckNorrisSearchService implements SearchServiceInterface
     public function getRandomChuckNorrisJoke()
     {
         $randomJokeData = $this->getAllResults(['type' => 'keyword', 'query' => 'Chuck']);
+        //dd($randomJokeData[array_rand($randomJokeData)]['value'] );
         if (count($randomJokeData) > 0) {
             return $randomJokeData[array_rand($randomJokeData)]['value'] ?? null;
         }

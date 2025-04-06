@@ -12,6 +12,7 @@ use App\Exceptions\EloquentSearchSaveException;
 use Database\Factories\SearchFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface; 
 
 class EloquentSearchRepositoryTest extends TestCase
 {
@@ -32,11 +33,15 @@ class EloquentSearchRepositoryTest extends TestCase
     #[Test]
     public function test_save_creates_search_entry()
     {
-        Log::shouldReceive('info')->once();
-
-        $search = $this->repository->save('testType', 'testQuery', ['result1', 'result2'], 'test@example.com');
-
+        $loggerMock = Mockery::mock(LoggerInterface::class);
+        $loggerMock->shouldReceive('info')->once()->with('Search results saved. testType | testQuery');
+    
+        $repository = new EloquentSearchRepository(new Search(), $loggerMock);
+    
+        $search = $repository->save('testType', 'testQuery', ['result1', 'result2'], 'test@example.com');
+    
         $this->assertInstanceOf(Search::class, $search);
+    
         $this->assertDatabaseHas('searches', [
             'type' => 'testType',
             'query' => 'testQuery',
@@ -45,20 +50,23 @@ class EloquentSearchRepositoryTest extends TestCase
         ]);
     }
     #[Test]
-    public function test_save_throws_exception_on_failure()
-    {
-        $this->expectException(EloquentSearchSaveException::class);
+public function test_save_throws_exception_on_failure()
+{
+    $this->expectException(EloquentSearchSaveException::class);
 
-        // Create a mock of the Search model
-        $mock = Mockery::mock(Search::class);
-        $mock->shouldReceive('newInstance')->once()->andReturnSelf(); // Return itself for new instance
-        $mock->shouldReceive('save')->once()->andReturnFalse(); // Simulate failed save
-        $mock->exists = false; // Ensure exists is false
-    
-        // Inject mock into repository
-        $repository = new EloquentSearchRepository($mock);
-    
-        // Run test: should throw exception because save() fails
-        $repository->save('testType', 'testQuery', ['result1'], 'test@example.com');
-    }
+    // Mock the Search model
+    $mock = Mockery::mock(Search::class);
+    $mock->shouldReceive('newInstance')->once()->andReturnSelf();
+    $mock->shouldReceive('save')->once()->andReturnFalse();
+    $mock->exists = false;
+
+    // Mock the logger
+    $loggerMock = Mockery::mock(LoggerInterface::class);
+    $loggerMock->shouldNotReceive('info'); // nothing should be logged if it fails
+
+    // Inject both mocks
+    $repository = new EloquentSearchRepository($mock, $loggerMock);
+
+    $repository->save('testType', 'testQuery', ['result1'], 'test@example.com');
+}
 }
