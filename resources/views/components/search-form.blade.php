@@ -40,6 +40,5 @@
         <label for="email" class="form-label">{{ __('index.send_email_optional') }}</label>
         <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}">
     </div>
-
     <button type="submit" class="btn btn-primary">{{ __('index.search_button') }}</button>
 </form>

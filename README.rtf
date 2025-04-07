@@ -36,7 +36,15 @@ La aplicaci\'f3n se ha desarrollado siguiendo un patr\'f3n de arquitectura que p
 \
 * **Chiste Aleatorio en la P\'e1gina de Inicio:** En la p\'e1gina de inicio (index), se muestra un chiste aleatorio. Este chiste se obtiene de una lista de resultados almacenada en cach\'e9. La lista se genera llamando al servicio de b\'fasqueda con `type = keyword` y `query = 'Chuck'`, lo que devuelve una extensa lista de aproximadamente 10.000 elementos. Los resultados de esta llamada a la API se almacenan en cach\'e9 durante 1 hora. Cada vez que se recarga la p\'e1gina de inicio, se selecciona y muestra un chiste diferente de esta lista en cach\'e9.\
 \
+* **Consideraciones de SEO:** Con el objetivo de optimizar el SEO (Search Engine Optimization), se ha optado por incluir el idioma directamente en la URL de la aplicaci\'f3n. Esto permite a los motores de b\'fasqueda identificar y categorizar el contenido por idioma de manera m\'e1s efectiva.\
+\
+* **Infraestructura:** Para facilitar el desarrollo y despliegue, la aplicaci\'f3n se ha configurado para ejecutarse utilizando **Docker Compose**, con **Redis** para la gesti\'f3n de la cach\'e9 y las colas, y **MySQL** como base de datos principal.\
+\
 En resumen, la soluci\'f3n se basa en principios de dise\'f1o robustos, utilizando patrones como Servicios y Repositorios, inyecci\'f3n de dependencias para la flexibilidad, cach\'e9 para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el env\'edo de correos electr\'f3nicos.\
+\
+**Nota Adicional:**\
+\
+Se incluye una carpeta llamada `Screenshots` en la ra\'edz del repositorio, donde se pueden encontrar pantallazos de la aplicaci\'f3n para una mejor comprensi\'f3n visual de su funcionamiento.\
 \
 \
 ## Modelo de Datos\
@@ -54,16 +62,14 @@ La aplicaci\'f3n utiliza las siguientes tablas para almacenar informaci\'f3n:\
 \
 ## Testing\
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 Implementar un conjunto de pruebas unitarias y de integraci\'f3n para cubrir algunas de las funcionalidades de la aplicaci\'f3n, incluyendo pruebas para los controladores, servicios, repositorios, jobs y middleware.\
+Implementar un conjunto de pruebas unitarias y de integraci\'f3n para cubrir algunas de las funcionalidades de la aplicaci\'f3n, incluyendo pruebas para los controladores, servicios, repositorios, jobs y middleware.\
    \
  * `SearchResultsMailFeatureTest`\
  * `SendSearchResultsEmailTest`\
  * `SearchResultsMailTest`\
  * `EloquentSearchRepositoryTest`\
  * `SearchControllerTest`\
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
-\cf0 \
+\
 \
 \
 ## Mejoras Adicionales\
@@ -71,4 +77,6 @@ La aplicaci\'f3n utiliza las siguientes tablas para almacenar informaci\'f3n:\
 * **Mostrar el N\'famero Total de Resultados en el Correo Electr\'f3nico:** Incluir en el correo electr\'f3nico enviado al usuario el n\'famero total de resultados encontrados para su b\'fasqueda.\
 * **Cambiar el N\'famero de Resultados Mostrados en la UI:** Permitir al usuario configurar o cambiar el n\'famero de resultados que se muestran por p\'e1gina en la interfaz de usuario.\
 * **Utilizar un Enumerado (Enum) para el Tipo de B\'fasqueda:** Reemplazar las cadenas de texto codificadas (`keyword`, `category`, `random`) utilizadas para el tipo de b\'fasqueda con un enumerado para mejorar la legibilidad y evitar errores tipogr\'e1ficos.\
-* **Aumentar el Tiempo de Cach\'e9:** El tiempo de cach\'e9 actual est\'e1 configurado en 1 hora, pero podr\'eda aumentarse significativamente ya que el contenido de la API no parece cambiar con mucha frecuencia. Considerar un tiempo de cach\'e9 m\'e1s prolongado para mejorar a\'fan m\'e1s el rendimiento.}
+* **Aumentar el Tiempo de Cach\'e9:** El tiempo de cach\'e9 actual est\'e1 configurado en 1 hora, pero podr\'eda aumentarse significativamente ya que el contenido de la API no parece cambiar con mucha frecuencia. Considerar un tiempo de cach\'e9 m\'e1s prolongado para mejorar a\'fan m\'e1s el rendimiento.\
+* **Testing Completo:** Implementar una cobertura exhaustiva de pruebas unitarias, de integraci\'f3n y funcionales para asegurar la robustez de todas las funcionalidades de la aplicaci\'f3n.\
+}

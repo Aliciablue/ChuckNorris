@@ -21,13 +21,15 @@ class SearchController extends Controller
 {
     use ApiResponseTrait;
 
-    public function __construct(protected SearchServiceInterface $searchService, protected SearchRepositoryInterface $searchRepository, protected NotificationServiceInterface $notificationService, protected SearchRecordService $recordService,protected LoggerInterface $logger) {}
+    public function __construct(protected SearchServiceInterface $searchService, protected SearchRepositoryInterface $searchRepository, protected NotificationServiceInterface $notificationService, protected SearchRecordService $recordService, protected LoggerInterface $logger) {}
 
     public function index()
     {
+        // Delete the session flag to indicate a fresh session or search
+        session()->forget('has_made_search');
         $randomJoke = $this->searchService->getRandomChuckNorrisJoke();
 
-        return view('search.index', ['randomJoke' => $randomJoke?? null]);
+        return view('search.index', ['randomJoke' => $randomJoke ?? null]);
     }
 
     public function search(SearchRequest $request)
@@ -40,15 +42,10 @@ class SearchController extends Controller
             $perPage = 10;
             $email = $validatedData['email'] ?? null;
 
-            $allResults = $this->searchService->getAllResults($validatedData);
-         
 
-            // Extract the raw items from the LengthAwarePaginator if it's an object
-            $resultsToRecord = is_object($allResults) && method_exists($allResults, 'items')
-                ? $allResults->items()
-                : $allResults;
-               // dd($allResults);
-            $this->recordService->handleSearchRecord($type, $query, $resultsToRecord, $email); // Call service to handle saving
+            $allResults = $this->searchService->getAllResults($validatedData);
+
+            $this->recordService->handleSearchRecord($type, $query,  $allResults, $email); // Call service to handle saving
 
             $paginatedResults = $this->paginateResults($request, $allResults, $page, $perPage);
 

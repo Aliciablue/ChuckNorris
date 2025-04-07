@@ -7,12 +7,13 @@ use Tests\TestCase;
 use Illuminate\View\View;
 use Illuminate\Http\Request;
 use Psr\Log\LoggerInterface;
+use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\SearchRequest;
-use Illuminate\Http\Response;
 use App\Services\SearchRecordService;
 use Illuminate\Http\RedirectResponse;
 use App\Exceptions\ApiServiceException;
+use Illuminate\Support\Facades\Session;
 use App\Contracts\SearchServiceInterface;
 use App\Http\Controllers\SearchController;
 use App\Contracts\SearchRepositoryInterface;
@@ -50,9 +51,12 @@ class SearchControllerTest extends TestCase
             $this->recordService,
             $this->logger
         );
+        // Ensure the session is started
+        session()->start();
     }
     public function test_index_returns_joke()
     {
+
         // Arrange
         $this->searchService->shouldReceive('getRandomChuckNorrisJoke')->andReturn(['value' => 'Chuck Norris joke']);
 
@@ -60,10 +64,13 @@ class SearchControllerTest extends TestCase
         $locale = 'en'; // or 'es', depending on the language
         $response = $this->get(route('search.index', ['locale' => $locale]));
 
+        // Assert that the session flag has been forgotten
+        $this->assertFalse(session()->has('has_made_search'));
+
         // Assert: Check if the view contains the joke
-       $response->assertViewHas('randomJoke');
-   
+        $response->assertViewHas('randomJoke');
     }
+
 
     public function test_search_returns_json_response_with_paginated_results()
     {
@@ -96,7 +103,7 @@ class SearchControllerTest extends TestCase
 
         $this->recordService->shouldReceive('handleSearchRecord')
             ->once()
-            ->with('keyword', 'chuck', $searchResults, 'test@example.com');
+            ->with('keyword', 'chuck', $searchResults, 'test@example.com', false); // Adapted to new signature
 
         $this->notification->shouldReceive('handleSearchResultNotification')
             ->once()
@@ -113,8 +120,8 @@ class SearchControllerTest extends TestCase
         $response = $this->controller->search($request);
 
         // Assert
-        $this->assertInstanceOf(JsonResponse::class, $response);  // Expecting a JsonResponse now
-        $this->assertEquals(200, $response->status()); // Or the correct status code for success
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertEquals(200, $response->status());
     }
     public function test_search_handles_api_service_exception()
     {
