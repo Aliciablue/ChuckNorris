@@ -33,6 +33,8 @@ La aplicación se ha desarrollado siguiendo un patrón de arquitectura que promu
 
 * **Infraestructura:** Para facilitar el desarrollo y despliegue, la aplicación se ha configurado para ejecutarse utilizando **Docker Compose**, con **Redis** para la gestión de la caché y las colas, y **MySQL** como base de datos principal.
 
+* **Frontend:** La interfaz de usuario de la aplicación se ha construido utilizando **Laravel Blade templates** para la generación del HTML en el servidor y **jQuery** para mejorar la interactividad y la manipulación del DOM en el lado del cliente. Esta elección se realizó para demostrar la compatibilidad con las tecnologías frontend utilizadas por la empresa y como una demostración de habilidades en estas herramientas.
+
 En resumen, la solución se basa en principios de diseño robustos, utilizando patrones como Servicios y Repositorios, inyección de dependencias para la flexibilidad, caché para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el envío de correos electrónicos.
 
 **Nota Adicional:**
