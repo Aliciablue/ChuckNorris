@@ -31,6 +31,8 @@ La aplicación se ha desarrollado siguiendo un patrón de arquitectura que promu
 
 * **Consideraciones de SEO:** Con el objetivo de optimizar el SEO (Search Engine Optimization), se ha optado por incluir el idioma directamente en la URL de la aplicación. Esto permite a los motores de búsqueda identificar y categorizar el contenido por idioma de manera más efectiva.
 
+* **Infraestructura:** Para facilitar el desarrollo y despliegue, la aplicación se ha configurado para ejecutarse utilizando **Docker Compose**, con **Redis** para la gestión de la caché y las colas, y **MySQL** como base de datos principal.
+
 En resumen, la solución se basa en principios de diseño robustos, utilizando patrones como Servicios y Repositorios, inyección de dependencias para la flexibilidad, caché para el rendimiento y colas con Jobs para el procesamiento en segundo plano de tareas como el guardado en la base de datos y el envío de correos electrónicos.
 
 **Nota Adicional:**
