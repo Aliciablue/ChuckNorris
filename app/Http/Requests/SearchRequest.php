@@ -34,6 +34,7 @@ class SearchRequest extends FormRequest
                 Rule::requiredIf($this->input('type') === 'category'),
             ],
             'email' => 'nullable|email',
+            'page' => 'nullable|integer|min:1',
         ];
     }
     public function messages(): array

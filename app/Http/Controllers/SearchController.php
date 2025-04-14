@@ -38,7 +38,7 @@ class SearchController extends Controller
             $validatedData = $request->validated();
             $type = $validatedData['type'];
             $query = $validatedData['query'] ?? null;
-            $page = $request->get('page', 1);
+            $page = $validatedData['page'] ?? 1;
             $perPage = 10;
             $email = $validatedData['email'] ?? null;
 

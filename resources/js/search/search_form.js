@@ -131,9 +131,7 @@ $(document).ready(function () {
             $(`input[name="type"][value="${oldType}"]`).prop('checked', true);
             if (oldType === 'category' && window.cachedCategories) {
                 populateCategoryDropdown(window.cachedCategories);
-            } else if (oldType === 'keyword') {
-                updateQueryContainer(); // Ensure keyword UI is set
-            } else {
+             } else {
                 updateQueryContainer(); // For random or other cases
             }
         } else {
@@ -164,9 +162,9 @@ $(document).ready(function () {
     });
 
     // Initialize form if categories were already cached
-    if (window.cachedCategories) {
+    // OR
+    // Initialize on initial load if no oldType and categories not immediately loaded
+    if (window.cachedCategories || (initialLoad && !oldType)) {
         initializeForm();
-    } else if (initialLoad && !oldType) {
-        initializeForm(); // Initialize on initial load if no oldType and categories not immediately loaded
-    }
+    } 
 });
