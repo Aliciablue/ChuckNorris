@@ -41,6 +41,56 @@ En resumen, la solución se basa en principios de diseño robustos, utilizando p
 
 Se incluye una carpeta llamada `Screenshots` en la raíz del repositorio, donde se pueden encontrar pantallazos de la aplicación para una mejor comprensión visual de su funcionamiento.
 
+## Instrucciones de Instalación
+
+Esta aplicación está configurada para ejecutarse utilizando **Laravel Sail**, que proporciona un entorno de desarrollo Docker listo para usar.
+
+1.  **Requisitos Previos:**
+    * Docker (https://www.docker.com/get-started/) y Docker Compose (generalmente incluido con Docker Desktop) instalados.
+
+2.  **Pasos de Instalación:**
+    * Clona el repositorio:
+        ```bash
+        git clone <URL_de_tu_repositorio>
+        cd ChuckNorris
+        ```
+    * Copia el archivo de entorno:
+        ```bash
+        cp .env.example .env
+        ```
+        Edita el archivo `.env` para configurar las variables de entorno. Asegúrate de configurar las credenciales de **Mailtrap** para las pruebas de correo electrónico:
+        ```
+        MAIL_MAILER=smtp
+        MAIL_HOST=smtp.mailtrap.io
+        MAIL_PORT=2525
+        MAIL_USERNAME=YOUR_MAILTRAP_USERNAME
+        MAIL_PASSWORD=YOUR_MAILTRAP_PASSWORD
+        MAIL_ENCRYPTION=tls
+        MAIL_FROM_ADDRESS=tu@email.com (opcional)
+        ```
+        Reemplaza `YOUR_MAILTRAP_USERNAME` y `YOUR_MAILTRAP_PASSWORD` con tus credenciales de Mailtrap.
+    * Inicia el entorno de desarrollo con Sail:
+        ```bash
+        ./vendor/bin/sail up -d
+        ```
+        Este comando construirá e iniciará los contenedores de Docker para la aplicación, la base de datos MySQL y Redis.
+    * Ejecuta las migraciones de la base de datos:
+        ```bash
+        ./vendor/bin/sail artisan migrate
+        ```
+    * Genera la clave de la aplicación:
+        ```bash
+        ./vendor/bin/sail artisan key:generate
+        ```
+    * Inicia el worker de la cola para procesar tareas en segundo plano (guardado en base de datos y envío de correos electrónicos):
+        ```bash
+        ./vendor/bin/sail artisan queue:work --redis
+        ```
+
+3.  **Acceder a la Aplicación:**
+    Una vez que los contenedores estén en funcionamiento, la aplicación estará accesible en tu navegador en `http://localhost`.
+
+
 
 ## Modelo de Datos
 
